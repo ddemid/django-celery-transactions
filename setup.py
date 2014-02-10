@@ -1,8 +1,7 @@
-# coding=utf-8
 import os
 import sys
 
-from setuptools import setup, Command, find_packages
+from setuptools import setup, Command
 
 
 class RunTests(Command):
@@ -20,6 +19,9 @@ class RunTests(Command):
                                                     settings_module_name)
         prev_argv = sys.argv[:]
         try:
+            sys.argv = [__file__, 'syncdb'] + self.extra_args
+            execute_from_command_line(argv=sys.argv)
+
             sys.argv = [__file__, 'test'] + self.extra_args
             execute_from_command_line(argv=sys.argv)
         finally:
@@ -33,7 +35,7 @@ class RunTests(Command):
 
 setup(
     name="django-celery-transactions",
-    version="0.1.4",
+    version="0.2.1",
     description="Django transaction support for Celery tasks.",
     long_description="See https://github.com/chrisdoble/django-celery-transactions",
     author="Chris Doble",
@@ -42,9 +44,9 @@ setup(
     license="Simplified BSD",
     packages=["djcelery_transactions"],
     install_requires=[
-        "celery>=2.2.7",
-        "Django>=1.2.4",
-        "django-celery>=2.2.7",
+        "celery>=3.1.8",
+        "Django>=1.6.2",
+        "django-transaction-hooks>=0.1.3",
     ],
     classifiers=[
         "Framework :: Django",
