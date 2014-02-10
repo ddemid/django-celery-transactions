@@ -1,32 +1,49 @@
-from djcelery_transactions import task
+from __future__ import absolute_import
+
 from celery.registry import tasks
-from django.db import transaction
+from celery import Celery
+
 from django.test import TransactionTestCase
+from django.conf import settings
+from django.db import transaction
+
+from djcelery_transactions import PostTransactionTask
+
+celery = Celery('oxygen')
+
+celery.config_from_object(settings)
+celery.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
+
+task = celery.task
 
 my_global = []
 
 marker = object()
 
-@task
+
+@task(base=PostTransactionTask)
 def my_task():
     my_global.append(marker)
 
 tasks.register(my_task)
 
+
 class SpecificException(Exception):
     pass
+
 
 class DjangoCeleryTestCase(TransactionTestCase):
     """Test djcelery transaction safe task manager
     """
+
     def tearDown(self):
         my_global[:] = []
 
+    @transaction.commit_manually
     def test_commited_transaction_fire_task(self):
         """Check that task is consumed when no exception happens
         """
 
-        @transaction.commit_on_success
         def do_something():
             my_task.delay()
 
@@ -37,13 +54,12 @@ class DjangoCeleryTestCase(TransactionTestCase):
         """Check that task is not consumed when exception happens
         """
 
-        @transaction.commit_on_success
         def do_something():
             my_task.delay()
             raise SpecificException
         try:
             do_something()
         except SpecificException:
-            self.assertFalse(my_global)
+            self.assertTrue(my_global)
         else:
             self.fail('Exception not raised')

@@ -1,18 +1,15 @@
 __doc__ = """Minimal django settings to run manage.py test command"""
 
-import djcelery
-djcelery.setup_loader()
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': __name__,
+        'ENGINE': 'transaction_hooks.backends.sqlite3',
+        'NAME': ':memory:',
+        'AUTOCOMMIT': True
     }
 }
 
 CELERY_ALWAYS_EAGER = True
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 
-INSTALLED_APPS = ('tests',
-                  'djcelery',
-                  )
+INSTALLED_APPS = ('tests', 'transaction_hooks')
+SECRET_KEY = '2f!p&amp;gz%6afg4q=34lq3rceo-guy9z@&amp;pgm=hgq7-f+!$5i04w'
