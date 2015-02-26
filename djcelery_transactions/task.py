@@ -1,11 +1,5 @@
-import threading
-
 from celery import Task
 from django.db import connection, transaction
-
-
-# Thread-local data (task queue).
-_thread_data = threading.local()
 
 
 class PostTransactionTask(Task):
